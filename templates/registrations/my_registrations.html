@@ -1,53 +1,92 @@
 {% extends 'base.html' %}
-{% block title %}My Registrations{% endblock %}
+{% load static %}
+
+{% block title %}My Registrations - EventHub{% endblock %}
+
 {% block content %}
-<h2 class="section-title"><i class="bi bi-ticket"></i> My Registrations</h2>
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h2 class="fw-bold mb-1">My Event Tickets</h2>
+        <p class="text-muted small mb-0">Overview of all your registered experiences.</p>
+    </div>
+    <a href="{% url 'events:list' %}" class="btn btn-outline-primary rounded-pill px-4">
+        Discover More
+    </a>
+</div>
+
 {% if registrations %}
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>Registration ID</th>
-                <th>Event</th>
-                <th>Date</th>
-                <th>Registered On</th>
-                <th>Status</th>
-                <th>Payment</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for reg in registrations %}
-            <tr>
-                <td><code>{{ reg.registration_id }}</code></td>
-                <td><a href="{% url 'events:detail' reg.event.pk %}">{{ reg.event.title }}</a></td>
-                <td>{{ reg.event.date }}</td>
-                <td>{{ reg.registered_at|date:"M d, Y" }}</td>
-                <td>
-                    {% if reg.status == 'active' %}<span class="badge bg-success">Active</span>
-                    {% else %}<span class="badge bg-danger">Cancelled</span>{% endif %}
-                </td>
-                <td>
-                    {% if reg.event.is_free %}<span class="badge bg-info text-dark">Free</span>
-                    {% elif reg.payment.payment_status == 'paid' %}<span class="badge bg-success">Paid</span>
-                    {% elif reg.payment.payment_status == 'pending' %}<span class="badge bg-warning text-dark">Pending</span>
-                    {% else %}<span class="badge bg-danger">Failed</span>{% endif %}
-                </td>
-                <td>
-                    {% if reg.status == 'active' %}
-                    <a href="{% url 'registrations:cancel' reg.pk %}" class="btn btn-sm btn-outline-danger"
-                       onclick="return confirm('Cancel this registration?')">Cancel</a>
-                    {% if not reg.event.is_free and reg.payment.payment_status == 'pending' %}
-                    <a href="{% url 'payments:pay' reg.payment.pk %}" class="btn btn-sm btn-warning">Pay Now</a>
-                    {% endif %}
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4 py-3 small text-muted text-uppercase">Event Detail</th>
+                    <th class="py-3 small text-muted text-uppercase">Ref ID</th>
+                    <th class="py-3 small text-muted text-uppercase">Status</th>
+                    <th class="py-3 small text-muted text-uppercase">Payment</th>
+                    <th class="pe-4 py-3 text-end small text-muted text-uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registrations %}
+                <tr>
+                    <td class="ps-4 py-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                            <div>
+                                <a href="{% url 'events:detail' reg.event.pk %}" class="fw-bold text-dark text-decoration-none hover-primary d-block">{{ reg.event.title }}</a>
+                                <small class="text-muted">{{ reg.event.date|date:"F d, Y" }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        <code class="small text-muted">{{ reg.registration_id|truncatechars:12 }}</code>
+                    </td>
+                    <td class="py-3">
+                        {% if reg.status == 'active' %}
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Cancelled</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-3">
+                        {% if reg.event.is_free %}
+                        <span class="badge bg-info-subtle text-info rounded-pill px-3">Free</span>
+                        {% elif reg.payment.payment_status == 'paid' %}
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3">Paid</span>
+                        {% elif reg.payment.payment_status == 'pending' %}
+                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Failed</span>
+                        {% endif %}
+                    </td>
+                    <td class="pe-4 py-3 text-end">
+                        {% if reg.status == 'active' %}
+                        {% if not reg.event.is_free and reg.payment.payment_status == 'pending' %}
+                        <a href="{% url 'payments:pay' reg.payment.pk %}" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold me-2">Pay Now</a>
+                        {% endif %}
+                        <a href="{% url 'registrations:cancel' reg.pk %}" class="btn btn-ghost btn-sm text-danger" 
+                           onclick="return confirm('Are you sure you want to cancel your registration? This action cannot be undone.')">
+                           <i class="bi bi-x-circle me-1"></i> Cancel
+                        </a>
+                        {% else %}
+                        <span class="text-muted small italic">Archived</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% else %}
-<div class="alert alert-info">You haven't registered for any events yet. <a href="{% url 'events:list' %}">Browse events</a></div>
+<div class="text-center py-5">
+    <img src="https://illustrations.popsy.co/slate/abstract-art-6.svg" alt="Empty" style="width: 180px; opacity: 0.5;" class="mb-4">
+    <h4 class="text-dark fw-bold">No registrations yet</h4>
+    <p class="text-muted">You haven't joined any events. Start exploring!</p>
+    <a href="{% url 'events:list' %}" class="btn btn-primary mt-3">Browse Events</a>
+</div>
 {% endif %}
 {% endblock %}

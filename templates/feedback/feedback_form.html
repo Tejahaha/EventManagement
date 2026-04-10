@@ -1,27 +1,84 @@
 {% extends 'base.html' %}
-{% block title %}Leave Feedback{% endblock %}
+{% load static %}
+
+{% block title %}Share your experience - EventHub{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-warning text-dark">
-                <h4 class="mb-0"><i class="bi bi-star"></i> Leave Feedback: {{ event.title }}</h4>
-            </div>
-            <div class="card-body">
+<div class="container d-flex align-items-center justify-content-center py-5" style="min-height: 80vh;">
+    <div class="w-100" style="max-width: 550px;">
+        <div class="card border-0 shadow-xl rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-5">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-star-fill fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">How was the event?</h3>
+                    <p class="text-muted small">{{ event.title }}</p>
+                </div>
+
                 <form method="POST">
                     {% csrf_token %}
-                    {% for field in form %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                    
+                    <div class="text-center mb-5">
+                        <label class="d-block small text-muted text-uppercase fw-bold letter-spacing-05 mb-3">Your Rating</label>
+                        <div class="star-rating-input">
+                            <input type="radio" id="star5" name="rating" value="5" {% if form.rating.value == 5 %}checked{% endif %} required />
+                            <label for="star5" title="5 stars"><i class="bi bi-star-fill"></i></label>
+                            
+                            <input type="radio" id="star4" name="rating" value="4" {% if form.rating.value == 4 %}checked{% endif %} />
+                            <label for="star4" title="4 stars"><i class="bi bi-star-fill"></i></label>
+                            
+                            <input type="radio" id="star3" name="rating" value="3" {% if form.rating.value == 3 %}checked{% endif %} />
+                            <label for="star3" title="3 stars"><i class="bi bi-star-fill"></i></label>
+                            
+                            <input type="radio" id="star2" name="rating" value="2" {% if form.rating.value == 2 %}checked{% endif %} />
+                            <label for="star2" title="2 stars"><i class="bi bi-star-fill"></i></label>
+                            
+                            <input type="radio" id="star1" name="rating" value="1" {% if form.rating.value == 1 %}checked{% endif %} />
+                            <label for="star1" title="1 star"><i class="bi bi-star-fill"></i></label>
+                        </div>
+                        {% if form.rating.errors %}<div class="text-danger small mt-2">{{ form.rating.errors }}</div>{% endif %}
                     </div>
-                    {% endfor %}
-                    <button type="submit" class="btn btn-warning"><i class="bi bi-send"></i> Submit Feedback</button>
-                    <a href="{% url 'events:detail' event.pk %}" class="btn btn-secondary ms-2">Cancel</a>
+
+                    <div class="mb-4">
+                        <label for="id_comment" class="form-label small fw-bold text-muted text-uppercase letter-spacing-05">Your Feedback</label>
+                        <textarea name="comment" id="id_comment" class="form-control rounded-4 p-3 shadow-none border" 
+                                  rows="4" placeholder="Tell others about your experience... Looking forward to hearing your thoughts!">{{ form.comment.value|default:'' }}</textarea>
+                        {% if form.comment.errors %}<div class="text-danger small mt-1">{{ form.comment.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary py-3 fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-send-fill"></i> Submit Review
+                        </button>
+                        <a href="{% url 'events:detail' event.pk %}" class="btn btn-link text-muted small text-decoration-none">Cancel and return</a>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Radio based star rating */
+    .star-rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .star-rating-input input { display: none; }
+    .star-rating-input label {
+        font-size: 2.5rem;
+        color: #E2E8F0;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+    .star-rating-input label:hover,
+    .star-rating-input label:hover ~ label,
+    .star-rating-input input:checked ~ label {
+        color: #F59E0B;
+        transform: scale(1.1);
+    }
+</style>
 {% endblock %}

@@ -1,30 +1,69 @@
 {% extends 'base.html' %}
-{% block title %}Payment{% endblock %}
+{% load static %}
+
+{% block title %}Complete Payment - EventHub{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-warning text-dark">
-                <h4 class="mb-0"><i class="bi bi-credit-card"></i> Complete Payment</h4>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <p class="mb-1"><strong>Event:</strong> {{ payment.registration.event.title }}</p>
-                    <p class="mb-1"><strong>Registration ID:</strong> {{ payment.registration.registration_id }}</p>
-                    <p class="mb-1"><strong>Amount:</strong> &#8377;{{ payment.amount }}</p>
-                    <p class="mb-0"><strong>Transaction ID:</strong> <code>{{ payment.transaction_id }}</code></p>
+<div class="container d-flex align-items-center justify-content-center py-5" style="min-height: 80vh;">
+    <div class="w-100" style="max-width: 500px;">
+        <div class="card border-0 shadow-xl rounded-4 overflow-hidden">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-credit-card fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Complete Payment</h3>
+                    <p class="text-muted small">Secure checkout powered by EventHub</p>
                 </div>
-                <p class="text-muted small"><em>This is a simulated payment. Choose an action below:</em></p>
+
+                <!-- Transaction Summary Box -->
+                <div class="p-4 rounded-4 mb-4" style="background-color: #EEF2FF; border: 1px solid rgba(99, 102, 241, 0.1);">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Event</span>
+                        <span class="fw-bold text-dark small">{{ payment.registration.event.title }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Ticket Count</span>
+                        <span class="fw-bold text-dark small">1 Ticket</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted small">Transaction Ref</span>
+                        <code class="text-primary small">{{ payment.transaction_id|truncatechars:18 }}</code>
+                    </div>
+                    <hr class="my-3 opacity-10">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark">Total Amount</span>
+                        <span class="display-6 fw-bold text-primary" style="font-size: 1.8rem;">&#8377;{{ payment.amount }}</span>
+                    </div>
+                </div>
+
                 <form method="POST">
                     {% csrf_token %}
-                    <button type="submit" name="action" value="pay" class="btn btn-success w-100 mb-2">
-                        <i class="bi bi-check-circle"></i> Simulate Successful Payment (&#8377;{{ payment.amount }})
-                    </button>
-                    <button type="submit" name="action" value="fail" class="btn btn-outline-danger w-100">
-                        <i class="bi bi-x-circle"></i> Simulate Failed Payment
-                    </button>
+                    <div class="d-grid gap-3">
+                        <button type="submit" name="action" value="pay" class="btn btn-success py-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 rounded-3" style="background: linear-gradient(to right, #10B981, #059669); border: none;">
+                            <i class="bi bi-lock-fill"></i> Simulate Pay &#8377;{{ payment.amount }}
+                        </button>
+                        
+                        <div class="text-center">
+                            <button type="submit" name="action" value="fail" class="btn btn-link text-danger small text-decoration-none fw-semibold">
+                                Simulate Payment Failure
+                            </button>
+                        </div>
+                    </div>
                 </form>
+
+                <div class="mt-4 text-center">
+                    <p class="tiny text-muted fst-italic mb-0" style="font-size: 0.75rem;">
+                        <i class="bi bi-shield-lock-fill me-1"></i> This is a demo payment simulation for testing purposes only. No actual funds will be transferred.
+                    </p>
+                </div>
             </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'registrations:my_registrations' %}" class="btn btn-link link-secondary text-decoration-none small">
+                <i class="bi bi-arrow-left me-1"></i> Cancel and return
+            </a>
         </div>
     </div>
 </div>

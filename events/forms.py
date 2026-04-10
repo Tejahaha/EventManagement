@@ -12,7 +12,7 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = ['title', 'description', 'category', 'venue', 'banner', 'date', 'time',
-                  'total_seats', 'ticket_price', 'status']
+                  'total_seats', 'ticket_price']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),

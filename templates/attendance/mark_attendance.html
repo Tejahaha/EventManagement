@@ -1,41 +1,153 @@
 {% extends 'base.html' %}
-{% block title %}Mark Attendance{% endblock %}
+{% load static %}
+
+{% block title %}Mark Attendance - EventHub{% endblock %}
+
 {% block content %}
-<h2 class="section-title"><i class="bi bi-check2-all"></i> Mark Attendance: {{ event.title }}</h2>
-{% if attendance_data %}
-<form method="POST">
-    {% csrf_token %}
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>Registration ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Attendance</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in attendance_data %}
-                <tr>
-                    <td><code>{{ item.registration.registration_id }}</code></td>
-                    <td>{{ item.registration.user.username }}</td>
-                    <td>{{ item.registration.user.email }}</td>
-                    <td>
-                        <select name="attendance_{{ item.registration.pk }}" class="form-select form-select-sm" style="width:130px;">
-                            <option value="present" {% if item.attendance and item.attendance.attendance_status == 'present' %}selected{% endif %}>Present</option>
-                            <option value="absent" {% if not item.attendance or item.attendance.attendance_status == 'absent' %}selected{% endif %}>Absent</option>
-                        </select>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="container py-5 mb-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2 small">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Attendance</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-1">Mark Attendance</h2>
+            <p class="text-muted mb-0">{{ event.title }} &bull; {{ event.date|date:"F d, Y" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="markAll('present')">
+                <i class="bi bi-check-all"></i> Mark All Present
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="markAll('absent')">
+                <i class="bi bi-x-circle"></i> Mark All Absent
+            </button>
+        </div>
     </div>
-    <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Save Attendance</button>
-    <a href="{% url 'events:detail' event.pk %}" class="btn btn-secondary ms-2">Back</a>
-</form>
-{% else %}
-<div class="alert alert-warning">No active registrations for this event.</div>
-{% endif %}
+
+    {% if attendance_data %}
+    <form method="POST" id="attendanceForm">
+        {% csrf_token %}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 small text-muted text-uppercase">Attendee Detail</th>
+                            <th class="py-3 small text-muted text-uppercase">Registration ID</th>
+                            <th class="py-3 small text-muted text-uppercase text-center">Status Toggle</th>
+                            <th class="pe-4 py-3 text-end small text-muted text-uppercase">Verification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in attendance_data %}
+                        <tr>
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold small" style="width: 40px; height: 40px;">
+                                        {{ item.registration.user.username|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark mb-0">{{ item.registration.user.username }}</div>
+                                        <div class="text-muted small">{{ item.registration.user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3">
+                                <code class="small text-muted">{{ item.registration.registration_id }}</code>
+                            </td>
+                            <td class="py-3">
+                                <div class="d-flex align-items-center justify-content-center gap-3">
+                                    <span class="small fw-bold text-muted transition-all" id="label_absent_{{ item.registration.pk }}">ABSENT</span>
+                                    <div class="form-check form-switch m-0">
+                                        <input class="form-check-input attendance-switch" type="checkbox" role="switch" 
+                                               id="switch_{{ item.registration.pk }}" data-reg-id="{{ item.registration.pk }}"
+                                               {% if item.attendance and item.attendance.attendance_status == 'present' %}checked{% endif %}
+                                               onchange="updateStatusLabel(this)">
+                                        <!-- Hidden select or input to maintain backend compatibility -->
+                                        <input type="hidden" name="attendance_{{ item.registration.pk }}" 
+                                               id="input_{{ item.registration.pk }}" 
+                                               value="{% if item.attendance and item.attendance.attendance_status == 'present' %}present{% else %}absent{% endif %}">
+                                    </div>
+                                    <span class="small fw-bold text-muted transition-all" id="label_present_{{ item.registration.pk }}">PRESENT</span>
+                                </div>
+                            </td>
+                            <td class="pe-4 py-3 text-end">
+                                <i class="bi bi-patch-check text-muted" id="verify_icon_{{ item.registration.pk }}"></i>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sticky Bottom Bar -->
+        <div class="sticky-bottom-bar">
+            <div class="container d-flex justify-content-between align-items-center">
+                <div class="text-muted small d-none d-md-block">
+                    <i class="bi bi-info-circle me-1"></i> Make sure to save changes before leaving the page.
+                </div>
+                <div class="d-flex gap-2 w-100 w-md-auto">
+                    <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <button type="submit" class="btn btn-success px-5 fw-bold shadow-sm d-flex align-items-center gap-2">
+                        <i class="bi bi-save-fill"></i> Save Attendance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    <div class="text-center py-5">
+        <img src="https://illustrations.popsy.co/slate/abstract-art-6.svg" alt="Empty" style="width: 200px; opacity: 0.5;" class="mb-4">
+        <h4 class="text-dark fw-bold">No active registrations</h4>
+        <p class="text-muted">Once participants register for your event, they will appear here.</p>
+        <a href="{% url 'events:detail' event.pk %}" class="btn btn-primary mt-2">Return to Event</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .attendance-switch { width: 3.5rem !important; height: 1.75rem !important; cursor: pointer; }
+    .attendance-switch:checked { background-color: var(--success); border-color: var(--success); }
+    .transition-all { transition: all 0.2s ease; }
+    .text-success-bold { color: var(--success) !important; opacity: 1 !important; transform: scale(1.1); }
+    .text-muted-dark { color: #475569 !important; opacity: 1 !important; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateStatusLabel(checkbox) {
+        const regId = checkbox.dataset.regId;
+        const hiddenInput = document.getElementById('input_' + regId);
+        const labelPresent = document.getElementById('label_present_' + regId);
+        const labelAbsent = document.getElementById('label_absent_' + regId);
+        const verifyIcon = document.getElementById('verify_icon_' + regId);
+
+        if (checkbox.checked) {
+            hiddenInput.value = 'present';
+            labelPresent.className = 'small fw-bold text-success-bold transition-all';
+            labelAbsent.className = 'small fw-bold text-muted opacity-50 transition-all';
+            verifyIcon.className = 'bi bi-patch-check-fill text-success';
+        } else {
+            hiddenInput.value = 'absent';
+            labelPresent.className = 'small fw-bold text-muted opacity-50 transition-all';
+            labelAbsent.className = 'small fw-bold text-muted-dark transition-all';
+            verifyIcon.className = 'bi bi-patch-check text-muted';
+        }
+    }
+
+    function markAll(status) {
+        const switches = document.querySelectorAll('.attendance-switch');
+        switches.forEach(sw => {
+            sw.checked = (status === 'present');
+            updateStatusLabel(sw);
+        });
+    }
+
+    // Initialize labels
+    document.querySelectorAll('.attendance-switch').forEach(sw => updateStatusLabel(sw));
+</script>
 {% endblock %}

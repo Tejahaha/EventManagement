@@ -1,28 +1,69 @@
 {% extends 'base.html' %}
-{% block title %}Register{% endblock %}
+{% load static %}
+
+{% block title %}Create Account - EventHub{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white text-center py-3">
-                <h4 class="mb-0"><i class="bi bi-person-plus"></i> Create Account</h4>
-            </div>
-            <div class="card-body p-4">
+<div class="container d-flex align-items-center justify-content-center py-5" style="min-height: 80vh;">
+    <div class="w-100" style="max-width: 420px;">
+        <div class="text-center mb-4">
+            <a class="navbar-brand d-flex align-items-center justify-content-center" href="{% url 'home' %}" style="font-size: 2rem;">
+                <i class="bi bi-calendar-event-fill me-2 text-primary"></i>
+                <span class="text-dark">Event</span><span style="color: var(--primary);">Hub</span>
+            </a>
+        </div>
+        
+        <div class="card border-0 shadow-xl rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <h4 class="fw-bold text-center mb-4">Join EventHub</h4>
+                
                 <form method="POST">
                     {% csrf_token %}
+                    
                     {% for field in form %}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                        <label class="form-label small fw-bold text-muted text-uppercase letter-spacing-05">{{ field.label }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                {% if 'user' in field.name.lower %}<i class="bi bi-person"></i>
+                                {% elif 'password' in field.name.lower %}<i class="bi bi-lock"></i>
+                                {% elif 'email' in field.name.lower %}<i class="bi bi-envelope"></i>
+                                {% else %}<i class="bi bi-pencil-square"></i>{% endif %}
+                            </span>
+                            {{ field }}
+                        </div>
+                        {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors }}</div>{% endif %}
+                        {% if field.help_text %}<div class="form-text mt-1" style="font-size: 0.7rem;">{{ field.help_text|safe }}</div>{% endif %}
                     </div>
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-check-lg"></i> Register</button>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm rounded-pill mt-4" style="background: linear-gradient(to right, #6366F1, #8B5CF6);">
+                        Create Account
+                    </button>
                 </form>
-                <hr>
-                <p class="text-center mb-0">Already have an account? <a href="{% url 'accounts:login' %}">Login</a></p>
+
+                <div class="position-relative my-5">
+                    <hr class="text-muted opacity-25">
+                    <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">— or join with —</span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-light border text-dark py-2 small d-flex align-items-center justify-content-center gap-2">
+                        <img src="https://img.icons8.com/color/24/000000/google-logo.png" width="18"> Google Account
+                    </button>
+                </div>
             </div>
         </div>
+        
+        <p class="text-center mt-4 text-muted small">
+            Already have an account? <a href="{% url 'accounts:login' %}" class="fw-bold text-primary text-decoration-none">Login</a>
+        </p>
     </div>
 </div>
+
+<style>
+    .input-group-text { border-radius: 10px 0 0 10px !important; }
+    .form-control { border-radius: 0 10px 10px 0 !important; }
+    .form-control:focus { border-left-color: transparent !important; }
+</style>
 {% endblock %}

@@ -1,74 +1,135 @@
 {% extends 'base.html' %}
-{% block title %}Admin Dashboard{% endblock %}
+{% load static %}
+
 {% block content %}
-<h2 class="section-title"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h2 class="fw-bold mb-1">Admin Dashboard</h2>
+        <p class="text-muted small mb-0">Overview of the entire EventHub system.</p>
+    </div>
+    <div>
+        <a href="{% url 'events:create' %}" class="btn btn-primary d-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i> <span>Create Event</span>
+        </a>
+    </div>
+</div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="dashboard-card">
-            <div class="text-muted small">Total Users</div>
-            <div class="fs-3 fw-bold text-primary">{{ total_users }}</div>
-            <i class="bi bi-people"></i>
+<!-- Stat Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-bottom: 4px solid var(--primary) !important;">
+            <div class="card-body p-4">
+                <div class="stat-card-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--primary);">
+                    <i class="bi bi-people fs-4"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_users }}</h3>
+                <span class="text-muted small fw-semibold text-uppercase letter-spacing-05">Total Users</span>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="dashboard-card success">
-            <div class="text-muted small">Total Organizers</div>
-            <div class="fs-3 fw-bold text-success">{{ total_organizers }}</div>
-            <i class="bi bi-person-badge"></i>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-bottom: 4px solid var(--success) !important;">
+            <div class="card-body p-4">
+                <div class="stat-card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">
+                    <i class="bi bi-person-badge fs-4"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_organizers }}</h3>
+                <span class="text-muted small fw-semibold text-uppercase letter-spacing-05">Organizers</span>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="dashboard-card warning">
-            <div class="text-muted small">Total Events</div>
-            <div class="fs-3 fw-bold" style="color:var(--warning);">{{ total_events }}</div>
-            <i class="bi bi-calendar-event"></i>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-bottom: 4px solid var(--warning) !important;">
+            <div class="card-body p-4">
+                <div class="stat-card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--warning);">
+                    <i class="bi bi-calendar-event fs-4"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_events }}</h3>
+                <span class="text-muted small fw-semibold text-uppercase letter-spacing-05">Total Events</span>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="dashboard-card danger">
-            <div class="text-muted small">Total Registrations</div>
-            <div class="fs-3 fw-bold text-danger">{{ total_registrations }}</div>
-            <i class="bi bi-ticket"></i>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-bottom: 4px solid var(--secondary) !important;">
+            <div class="card-body p-4">
+                <div class="stat-card-icon" style="background: rgba(236, 72, 153, 0.15); color: var(--secondary);">
+                    <i class="bi bi-ticket fs-4"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_registrations }}</h3>
+                <span class="text-muted small fw-semibold text-uppercase letter-spacing-05">Registrations</span>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="dashboard-card success">
-            <div class="text-muted small">Total Revenue (Paid)</div>
-            <div class="fs-3 fw-bold text-success">&#8377;{{ total_payments }}</div>
-            <i class="bi bi-currency-rupee"></i>
+<!-- Charts & Lists -->
+<div class="row g-4 mb-5">
+    {% if reg_chart %}
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 px-2 pt-2">
+            <div class="card-body">
+                <h6 class="fw-bold mb-4">Registration Analytics</h6>
+                <div class="d-flex justify-content-center">
+                    <img src="data:image/png;base64,{{ reg_chart }}" class="img-fluid rounded" alt="Chart">
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-bottom: 4px solid var(--success) !important;">
+            <div class="card-body p-4">
+                <div class="stat-card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">
+                    <i class="bi bi-currency-rupee fs-4"></i>
+                </div>
+                <span class="text-muted small fw-semibold text-uppercase letter-spacing-05">Total Revenue</span>
+                <h3 class="fw-bold mt-1 text-success">&#8377;{{ total_payments }}</h3>
+                <hr class="my-4 opacity-10">
+                <p class="small text-muted mb-0">Combined earnings from all paid tickets processed through the platform.</p>
+            </div>
         </div>
     </div>
 </div>
 
-{% if reg_chart %}
-<div class="card mb-4">
-    <div class="card-body text-center">
-        <h5>Registrations per Event</h5>
-        <img src="data:image/png;base64,{{ reg_chart }}" class="img-fluid">
+<!-- Recent Activity Table -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between bg-light bg-opacity-50">
+            <h6 class="fw-bold mb-0">Recent Registrations</h6>
+            <a href="#" class="btn btn-ghost btn-sm text-primary small">View All</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: #F1F5F9;">
+                    <tr>
+                        <th class="ps-4 py-3 small text-muted text-uppercase">Attendee</th>
+                        <th class="py-3 small text-muted text-uppercase">Event Name</th>
+                        <th class="py-3 small text-muted text-uppercase">Registered On</th>
+                        <th class="py-3 small text-muted text-uppercase">Status</th>
+                        <th class="pe-4 py-3 text-end small text-muted text-uppercase">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in recent_registrations %}
+                    <tr>
+                        <td class="ps-4 py-3 fw-medium">{{ reg.user.username }}</td>
+                        <td class="py-3">{{ reg.event.title }}</td>
+                        <td class="py-3 text-muted small">{{ reg.registered_at|date:"M d, Y" }}</td>
+                        <td class="py-3">
+                            {% if reg.status == 'active' %}
+                            <span class="badge bg-success-subtle text-success rounded-pill fw-semibold">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger rounded-pill fw-semibold">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 py-3 text-end">
+                            <button class="btn btn-ghost btn-sm text-muted p-1" data-bs-toggle="tooltip" title="View Detail"><i class="bi bi-eye"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-{% endif %}
-
-<h5 class="mt-4"><i class="bi bi-clock-history"></i> Recent Registrations</h5>
-<div class="table-responsive">
-    <table class="table table-sm table-hover">
-        <thead class="table-dark">
-            <tr><th>User</th><th>Event</th><th>Date</th><th>Status</th></tr>
-        </thead>
-        <tbody>
-            {% for reg in recent_registrations %}
-            <tr>
-                <td>{{ reg.user.username }}</td>
-                <td>{{ reg.event.title }}</td>
-                <td>{{ reg.registered_at|date:"M d, Y" }}</td>
-                <td>{% if reg.status == 'active' %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Cancelled</span>{% endif %}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 {% endblock %}

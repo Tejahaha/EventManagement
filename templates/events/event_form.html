@@ -1,30 +1,179 @@
 {% extends 'base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% load static %}
+
+{% block title %}{{ title }} - EventHub{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
+<div class="row justify-content-center g-4">
+    <!-- Form Section -->
     <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-calendar-plus"></i> {{ title }}</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="fw-bold mb-4">{{ title }}</h2>
+                <form method="POST" enctype="multipart/form-data" id="eventForm">
                     {% csrf_token %}
-                    {% for field in form %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors }}</div>{% endif %}
-                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger rounded-3 small">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <!-- Basic Info -->
+                    <div class="form-section-header">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>Basic Information</span>
                     </div>
-                    {% endfor %}
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save Event</button>
-                        <a href="{% url 'events:list' %}" class="btn btn-secondary">Cancel</a>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="text" name="title" id="id_title" class="form-control" placeholder="Event Title" required value="{{ form.title.value|default:'' }}">
+                        <label for="id_title">Event Title</label>
+                        {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <textarea name="description" id="id_description" class="form-control" placeholder="Description" style="height: 151px" required>{{ form.description.value|default:'' }}</textarea>
+                        <label for="id_description">Description</label>
+                        {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label small fw-bold text-muted text-uppercase mb-3">Event Banner</label>
+                        <div class="banner-upload-box" id="bannerPreviewContainer" onclick="document.getElementById('id_banner').click()" style="{% if form.instance.banner %}padding: 1rem;{% endif %}">
+                            <div id="uploadPlaceholder" class="{% if form.instance.banner %}d-none{% endif %}">
+                                <i class="bi bi-camera-fill display-4 text-primary opacity-25 mb-2 d-block"></i>
+                                <span class="fw-semibold d-block">Click to Upload Banner</span>
+                                <span class="text-muted small">JPG, PNG or WEBP (Max 2MB)</span>
+                            </div>
+                            <img id="imagePreview" src="{% if form.instance.banner %}{{ form.instance.banner.url }}{% else %}#{% endif %}" alt="Preview" class="img-fluid rounded-3 {% if not form.instance.banner %}d-none{% endif %}" style="max-height: 300px;">
+                            <input type="file" name="banner" id="id_banner" class="d-none" accept="image/*">
+                        </div>
+                        {% if form.banner.errors %}<div class="text-danger small mt-1">{{ form.banner.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Date & Venue -->
+                    <div class="form-section-header">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span>Date & Venue</span>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="date" name="date" id="id_date" class="form-control" required value="{{ form.date.value|date:'Y-m-d' }}">
+                                <label for="id_date">Event Date</label>
+                                {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="time" name="time" id="id_time" class="form-control" required value="{{ form.time.value|time:'H:i' }}">
+                                <label for="id_time">Start Time</label>
+                                {% if form.time.errors %}<div class="text-danger small mt-1">{{ form.time.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-5">
+                        <input type="text" name="venue" id="id_venue" class="form-control" placeholder="Venue Address" required value="{{ form.venue.value|default:'' }}">
+                        <label for="id_venue">Venue Address</label>
+                        {% if form.venue.errors %}<div class="text-danger small mt-1">{{ form.venue.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Tickets & Capacity -->
+                    <div class="form-section-header">
+                        <i class="bi bi-ticket-perforated-fill"></i>
+                        <span>Tickets & Capacity</span>
+                    </div>
+
+                    <div class="row g-3 mb-5">
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <select name="category" id="id_category" class="form-select">
+                                    <option value="" disabled selected>Choose category...</option>
+                                    {% for choice in form.category.field.queryset %}
+                                    <option value="{{ choice.pk }}" {% if form.category.value|add:0 == choice.pk %}selected{% endif %}>{{ choice.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="id_category">Category</label>
+                                {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="number" name="total_seats" id="id_total_seats" class="form-control" placeholder="Capacity" required value="{{ form.total_seats.value|default:'' }}">
+                                <label for="id_total_seats">Total Capacity</label>
+                                {% if form.total_seats.errors %}<div class="text-danger small mt-1">{{ form.total_seats.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="number" step="0.01" name="ticket_price" id="id_ticket_price" class="form-control" placeholder="Price" required value="{{ form.ticket_price.value|default:'0.00' }}">
+                                <label for="id_ticket_price">Price (₹)</label>
+                                {% if form.ticket_price.errors %}<div class="text-danger small mt-1">{{ form.ticket_price.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid pt-3">
+                        <button type="submit" class="btn btn-primary py-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" id="submitBtn">
+                            <span>Save Event</span>
+                            <div class="spinner-border spinner-border-sm d-none" role="status" id="btnSpinner"></div>
+                        </button>
+                        <a href="{% url 'events:list' %}" class="btn btn-link text-muted mt-2">Discard Changes</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <!-- Tips Panel -->
+    <div class="col-lg-4">
+        <div class="card tips-card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
+            <h5 class="fw-bold mb-3"><i class="bi bi-lightbulb-fill text-warning me-2"></i> Creation Tips</h5>
+            <ul class="list-unstyled d-flex flex-column gap-3 small text-secondary">
+                <li class="d-flex gap-2">
+                    <i class="bi bi-check2-circle text-primary"></i>
+                    <span>Use a catchy title that clearly describes your event's theme.</span>
+                </li>
+                <li class="d-flex gap-2">
+                    <i class="bi bi-check2-circle text-primary"></i>
+                    <span>High-quality banners (1200x600px) get 40% more registrations.</span>
+                </li>
+                <li class="d-flex gap-2">
+                    <i class="bi bi-check2-circle text-primary"></i>
+                    <span>Detailed descriptions help attendees know what to expect.</span>
+                </li>
+                <li class="d-flex gap-2">
+                    <i class="bi bi-check2-circle text-primary"></i>
+                    <span>Double-check your venue address for navigation accuracy.</span>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('eventForm').addEventListener('submit', function() {
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('btnSpinner').classList.remove('d-none');
+    });
+
+    // Preview image on upload
+    document.getElementById('id_banner').addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                const placeholder = document.getElementById('uploadPlaceholder');
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+                placeholder.classList.add('d-none');
+                
+                // Change box padding for better image viewing
+                document.getElementById('bannerPreviewContainer').style.padding = '1rem';
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+</script>
 {% endblock %}

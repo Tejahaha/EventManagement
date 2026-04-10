@@ -1,72 +1,141 @@
 {% extends 'base.html' %}
-{% block title %}My Dashboard{% endblock %}
+{% load static %}
+
 {% block content %}
-<h2 class="section-title"><i class="bi bi-speedometer2"></i> My Dashboard</h2>
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h2 class="fw-bold mb-1">Welcome, {{ user.username }}</h2>
+        <p class="text-muted small mb-0">Here's a summary of your event activity.</p>
+    </div>
+</div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="dashboard-card">
-            <div class="text-muted small">Registered Events</div>
-            <div class="fs-3 fw-bold text-primary">{{ registrations.count }}</div>
+<!-- Stat Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-6 col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-bottom: 4px solid var(--primary) !important;">
+            <div class="card-body p-4">
+                <div class="stat-card-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--primary);">
+                    <i class="bi bi-ticket-perforated fs-4"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ registrations.count }}</h3>
+                <span class="text-muted small fw-semibold text-uppercase letter-spacing-05">My Registrations</span>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="dashboard-card success">
-            <div class="text-muted small">Present Count</div>
-            <div class="fs-3 fw-bold text-success">{{ present_count }}</div>
+    <div class="col-6 col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-bottom: 4px solid var(--success) !important;">
+            <div class="card-body p-4">
+                <div class="stat-card-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">
+                    <i class="bi bi-check-circle fs-4"></i>
+                </div>
+                <h3 class="fw-bold mb-1 text-success">{{ present_count }}</h3>
+                <span class="text-muted small fw-semibold text-uppercase letter-spacing-05">Events Attended</span>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="dashboard-card danger">
-            <div class="text-muted small">Absent Count</div>
-            <div class="fs-3 fw-bold text-danger">{{ absent_count }}</div>
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-bottom: 4px solid var(--danger) !important;">
+            <div class="card-body p-4">
+                <div class="stat-card-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--danger);">
+                    <i class="bi bi-x-circle fs-4"></i>
+                </div>
+                <h3 class="fw-bold mb-1 text-danger">{{ absent_count }}</h3>
+                <span class="text-muted small fw-semibold text-uppercase letter-spacing-05">Waitlisted/Missed</span>
+            </div>
         </div>
     </div>
 </div>
 
-{% if att_chart %}
-<div class="card mb-4" style="max-width:400px;">
-    <div class="card-body text-center">
-        <h6>Attendance Summary</h6>
-        <img src="data:image/png;base64,{{ att_chart }}" class="img-fluid">
+<div class="row g-4 mb-5">
+    <!-- Attendance Chart -->
+    {% if att_chart %}
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4 text-center">
+                <h6 class="fw-bold mb-4 text-start">Attendance Status</h6>
+                <img src="data:image/png;base64,{{ att_chart }}" class="img-fluid rounded" alt="Attendance Chart" style="max-height: 250px;">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- My Recent Tickets -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-0">
+                <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between bg-light bg-opacity-50">
+                    <h6 class="fw-bold mb-0">My Tickets</h6>
+                    <a href="{% url 'registrations:my_registrations' %}" class="small text-primary text-decoration-none fw-bold">View All</a>
+                </div>
+                <div class="p-3">
+                    {% if registrations %}
+                    <div class="d-flex flex-column gap-2">
+                        {% for reg in registrations|slice:":5" %}
+                        <div class="d-flex align-items-center justify-content-between p-3 border rounded-3 bg-white">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-primary-subtle text-primary rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-calendar-event"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold small text-truncate" style="max-width: 180px;">{{ reg.event.title }}</h6>
+                                    <small class="text-muted">{{ reg.event.date|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                            <span class="badge {% if reg.status == 'active' %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} rounded-pill small fw-semibold">
+                                {{ reg.status|title }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted small mb-0">You haven't registered for any events yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-{% endif %}
 
-<div class="row">
-    <div class="col-md-6">
-        <h5><i class="bi bi-ticket"></i> My Registrations</h5>
-        {% if registrations %}
-        <ul class="list-group mb-3">
-            {% for reg in registrations %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <a href="{% url 'events:detail' reg.event.pk %}">{{ reg.event.title }}</a><br>
-                    <small class="text-muted">{{ reg.event.date }} &bull; <code>{{ reg.registration_id }}</code></small>
-                </div>
-                {% if reg.status == 'active' %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Cancelled</span>{% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}<p class="text-muted">No registrations yet.</p>{% endif %}
-    </div>
-    <div class="col-md-6">
-        <h5><i class="bi bi-credit-card"></i> Recent Payments</h5>
-        {% if payments %}
-        <ul class="list-group mb-3">
-            {% for p in payments %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    {{ p.registration.event.title }}<br>
-                    <small class="text-muted"><code>{{ p.transaction_id }}</code></small>
-                </div>
-                {% if p.payment_status == 'paid' %}<span class="badge bg-success">Paid</span>
-                {% elif p.payment_status == 'pending' %}<span class="badge bg-warning text-dark">Pending</span>
-                {% else %}<span class="badge bg-danger">Failed</span>{% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}<p class="text-muted">No payment records.</p>{% endif %}
+<!-- Recent Payments -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="px-4 py-3 border-bottom bg-light bg-opacity-50">
+            <h6 class="fw-bold mb-0">Recent Payment Transactions</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: #F1F5F9;">
+                    <tr>
+                        <th class="ps-4 py-3 small text-muted text-uppercase">Transaction ID</th>
+                        <th class="py-3 small text-muted text-uppercase">Event Name</th>
+                        <th class="py-3 small text-muted text-uppercase">Amount</th>
+                        <th class="py-3 small text-muted text-uppercase">Status</th>
+                        <th class="pe-4 py-3 text-end small text-muted text-uppercase">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments|slice:":5" %}
+                    <tr>
+                        <td class="ps-4 py-3 fw-bold small text-muted">#{{ p.transaction_id|truncatechars:12 }}</td>
+                        <td class="py-3 fw-medium">{{ p.registration.event.title }}</td>
+                        <td class="py-3">&#8377;{{ p.registration.event.ticket_price }}</td>
+                        <td class="py-3">
+                            {% if p.payment_status == 'paid' %}
+                            <span class="badge bg-success-subtle text-success rounded-pill">Success</span>
+                            {% elif p.payment_status == 'pending' %}
+                            <span class="badge bg-warning-subtle text-warning rounded-pill">Pending</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger rounded-pill">Failed</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 py-3 text-end text-muted small">{{ p.payment_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
