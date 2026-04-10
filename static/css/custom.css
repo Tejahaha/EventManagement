@@ -1,0 +1,67 @@
+:root {
+    --primary: #4e73df;
+    --secondary: #858796;
+    --success: #1cc88a;
+    --danger: #e74a3b;
+    --warning: #f6c23e;
+}
+
+body {
+    background-color: #f8f9fc;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+.event-banner {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+}
+
+.badge-free { background-color: #1cc88a; }
+.badge-paid { background-color: #e74a3b; }
+
+.status-upcoming { color: #4e73df; font-weight: 600; }
+.status-ongoing { color: #1cc88a; font-weight: 600; }
+.status-completed { color: #858796; font-weight: 600; }
+.status-cancelled { color: #e74a3b; font-weight: 600; }
+
+.dashboard-card {
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.dashboard-card.success { border-left-color: var(--success); }
+.dashboard-card.danger  { border-left-color: var(--danger); }
+.dashboard-card.warning { border-left-color: var(--warning); }
+
+.star-rating { color: #f6c23e; }
+
+footer {
+    background: #343a40;
+    color: #adb5bd;
+    padding: 1.5rem 0;
+    margin-top: 3rem;
+}
+
+.btn-primary { background-color: var(--primary); border-color: var(--primary); }
+.section-title { font-weight: 700; margin-bottom: 1.5rem; color: #333; }

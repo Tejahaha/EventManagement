@@ -1,0 +1,9 @@
+from django.urls import path
+from . import views
+
+app_name = 'attendance'
+
+urlpatterns = [
+    path('event/<int:event_pk>/mark/', views.mark_attendance, name='mark'),
+    path('history/', views.attendance_history, name='history'),
+]

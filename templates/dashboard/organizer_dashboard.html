@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Organizer Dashboard{% endblock %}
+{% block content %}
+<h2 class="section-title"><i class="bi bi-speedometer2"></i> Organizer Dashboard</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="dashboard-card">
+            <div class="text-muted small">My Events</div>
+            <div class="fs-3 fw-bold text-primary">{{ my_events.count }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card success">
+            <div class="text-muted small">Total Revenue</div>
+            <div class="fs-3 fw-bold text-success">&#8377;{{ total_revenue }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card warning">
+            <div class="text-muted small">Total Attendance</div>
+            <div class="fs-3 fw-bold" style="color:var(--warning);">{{ total_attendance }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    {% if reg_chart %}<div class="col-md-6"><div class="card"><div class="card-body text-center"><h6>Registrations per Event</h6><img src="data:image/png;base64,{{ reg_chart }}" class="img-fluid"></div></div></div>{% endif %}
+    {% if rev_chart %}<div class="col-md-6"><div class="card"><div class="card-body text-center"><h6>Revenue per Event</h6><img src="data:image/png;base64,{{ rev_chart }}" class="img-fluid"></div></div></div>{% endif %}
+</div>
+
+<h5><i class="bi bi-calendar-event"></i> My Events</h5>
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr><th>Title</th><th>Date</th><th>Status</th><th>Registrations</th><th>Seats Left</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for event in my_events %}
+            <tr>
+                <td><a href="{% url 'events:detail' event.pk %}">{{ event.title }}</a></td>
+                <td>{{ event.date }}</td>
+                <td><span class="status-{{ event.status }}">{{ event.get_status_display }}</span></td>
+                <td>{{ event.reg_count }}</td>
+                <td>{{ event.available_seats }}</td>
+                <td>
+                    <a href="{% url 'events:edit' event.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'attendance:mark' event.pk %}" class="btn btn-sm btn-outline-success"><i class="bi bi-check2"></i></a>
+                    <a href="{% url 'events:export_csv' event.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<a href="{% url 'events:create' %}" class="btn btn-primary mt-2"><i class="bi bi-plus-circle"></i> Create New Event</a>
+{% endblock %}

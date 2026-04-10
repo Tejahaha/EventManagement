@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Browse Events{% endblock %}
+{% block content %}
+<h2 class="section-title"><i class="bi bi-search"></i> Browse Events</h2>
+
+<!-- Filters -->
+<form method="GET" class="card card-body mb-4">
+    <div class="row g-2">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Search events..." value="{{ query }}">
+        </div>
+        <div class="col-md-2">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="price" class="form-select">
+                <option value="">All Prices</option>
+                <option value="free" {% if price_filter == 'free' %}selected{% endif %}>Free</option>
+                <option value="paid" {% if price_filter == 'paid' %}selected{% endif %}>Paid</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">All Status</option>
+                <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                <option value="ongoing" {% if status_filter == 'ongoing' %}selected{% endif %}>Ongoing</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Search</button>
+        </div>
+    </div>
+</form>
+
+<p class="text-muted">{{ events.count }} event(s) found</p>
+
+{% if events %}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for event in events %}
+    <div class="col">
+        <div class="card h-100">
+            {% if event.banner %}
+            <img src="{{ event.banner.url }}" class="event-banner" alt="{{ event.title }}">
+            {% else %}
+            <div class="event-banner d-flex align-items-center justify-content-center bg-secondary text-white">
+                <i class="bi bi-calendar3" style="font-size:3rem;"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="badge bg-secondary">{{ event.category.name|default:"General" }}</span>
+                    <span class="status-{{ event.status }}">{{ event.get_status_display }}</span>
+                </div>
+                <h5 class="card-title">{{ event.title }}</h5>
+                <p class="small text-muted">
+                    <i class="bi bi-geo-alt"></i> {{ event.venue }}<br>
+                    <i class="bi bi-calendar"></i> {{ event.date }} &nbsp; <i class="bi bi-clock"></i> {{ event.time }}
+                </p>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    {% if event.is_free %}<span class="badge badge-free">Free</span>{% else %}<strong>&#8377;{{ event.ticket_price }}</strong>{% endif %}
+                    <small class="text-muted"><i class="bi bi-people"></i> {{ event.available_seats }} left</small>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'events:detail' event.pk %}" class="btn btn-primary btn-sm w-100">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-warning">No events found matching your criteria.</div>
+{% endif %}
+{% endblock %}

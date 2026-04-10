@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Mark Attendance{% endblock %}
+{% block content %}
+<h2 class="section-title"><i class="bi bi-check2-all"></i> Mark Attendance: {{ event.title }}</h2>
+{% if attendance_data %}
+<form method="POST">
+    {% csrf_token %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Registration ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Attendance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in attendance_data %}
+                <tr>
+                    <td><code>{{ item.registration.registration_id }}</code></td>
+                    <td>{{ item.registration.user.username }}</td>
+                    <td>{{ item.registration.user.email }}</td>
+                    <td>
+                        <select name="attendance_{{ item.registration.pk }}" class="form-select form-select-sm" style="width:130px;">
+                            <option value="present" {% if item.attendance and item.attendance.attendance_status == 'present' %}selected{% endif %}>Present</option>
+                            <option value="absent" {% if not item.attendance or item.attendance.attendance_status == 'absent' %}selected{% endif %}>Absent</option>
+                        </select>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Save Attendance</button>
+    <a href="{% url 'events:detail' event.pk %}" class="btn btn-secondary ms-2">Back</a>
+</form>
+{% else %}
+<div class="alert alert-warning">No active registrations for this event.</div>
+{% endif %}
+{% endblock %}

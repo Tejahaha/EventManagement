@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Payment{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="bi bi-credit-card"></i> Complete Payment</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <p class="mb-1"><strong>Event:</strong> {{ payment.registration.event.title }}</p>
+                    <p class="mb-1"><strong>Registration ID:</strong> {{ payment.registration.registration_id }}</p>
+                    <p class="mb-1"><strong>Amount:</strong> &#8377;{{ payment.amount }}</p>
+                    <p class="mb-0"><strong>Transaction ID:</strong> <code>{{ payment.transaction_id }}</code></p>
+                </div>
+                <p class="text-muted small"><em>This is a simulated payment. Choose an action below:</em></p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="pay" class="btn btn-success w-100 mb-2">
+                        <i class="bi bi-check-circle"></i> Simulate Successful Payment (&#8377;{{ payment.amount }})
+                    </button>
+                    <button type="submit" name="action" value="fail" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-x-circle"></i> Simulate Failed Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

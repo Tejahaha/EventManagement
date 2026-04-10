@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Attendance History{% endblock %}
+{% block content %}
+<h2 class="section-title"><i class="bi bi-check2-circle"></i> My Attendance History</h2>
+{% if history %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Attendance</th>
+                <th>Marked On</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in history %}
+            <tr>
+                <td><a href="{% url 'events:detail' item.registration.event.pk %}">{{ item.registration.event.title }}</a></td>
+                <td>{{ item.registration.event.date }}</td>
+                <td>
+                    {% if item.attendance %}
+                        {% if item.attendance.attendance_status == 'present' %}<span class="badge bg-success">Present</span>
+                        {% else %}<span class="badge bg-danger">Absent</span>{% endif %}
+                    {% else %}<span class="badge bg-secondary">Not Marked</span>{% endif %}
+                </td>
+                <td>{% if item.attendance %}{{ item.attendance.marked_at|date:"M d, Y H:i" }}{% else %}-{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">No attendance records.</div>
+{% endif %}
+{% endblock %}

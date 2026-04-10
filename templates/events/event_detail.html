@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        {% if event.banner %}
+        <img src="{{ event.banner.url }}" class="img-fluid rounded mb-4" style="max-height:400px;width:100%;object-fit:cover;" alt="{{ event.title }}">
+        {% endif %}
+        <h1>{{ event.title }}</h1>
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+            <span class="badge bg-primary fs-6">{{ event.category.name|default:"General" }}</span>
+            <span class="badge {% if event.status == 'upcoming' %}bg-info{% elif event.status == 'ongoing' %}bg-success{% elif event.status == 'completed' %}bg-secondary{% else %}bg-danger{% endif %} fs-6">{{ event.get_status_display }}</span>
+            {% if event.is_free %}<span class="badge badge-free fs-6">Free</span>{% else %}<span class="badge badge-paid fs-6">&#8377;{{ event.ticket_price }}</span>{% endif %}
+        </div>
+        <p class="lead">{{ event.description }}</p>
+        <hr>
+        {% if avg_rating %}<p><i class="bi bi-star-fill star-rating"></i> <strong>{{ avg_rating }}/5</strong> ({{ feedbacks.count }} review{{ feedbacks.count|pluralize }})</p>{% endif %}
+
+        <!-- Feedbacks -->
+        {% if feedbacks %}
+        <h5 class="mt-4"><i class="bi bi-chat-quote"></i> Reviews</h5>
+        {% for fb in feedbacks %}
+        <div class="card mb-2">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between">
+                    <strong>{{ fb.user.username }}</strong>
+                    <span class="star-rating">{% for i in "12345" %}{% if forloop.counter <= fb.rating %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}</span>
+                </div>
+                <small class="text-muted">{{ fb.comment }}</small>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card sticky-top" style="top:80px;">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle"></i> Event Details</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-geo-alt text-primary"></i> <strong>Venue:</strong> {{ event.venue }}</li>
+                    <li class="mb-2"><i class="bi bi-calendar text-primary"></i> <strong>Date:</strong> {{ event.date }}</li>
+                    <li class="mb-2"><i class="bi bi-clock text-primary"></i> <strong>Time:</strong> {{ event.time }}</li>
+                    <li class="mb-2"><i class="bi bi-people text-primary"></i> <strong>Seats Left:</strong> {{ event.available_seats }} / {{ event.total_seats }}</li>
+                    <li class="mb-2"><i class="bi bi-person text-primary"></i> <strong>Organizer:</strong> {{ event.organizer.username }}</li>
+                    <li class="mb-2"><i class="bi bi-ticket text-primary"></i> <strong>Price:</strong> {% if event.is_free %}Free{% else %}&#8377;{{ event.ticket_price }}{% endif %}</li>
+                </ul>
+
+                <div class="progress mb-3" style="height:8px;">
+                    {% widthratio event.available_seats event.total_seats 100 as seat_pct %}
+                    <div class="progress-bar bg-success" style="width:{{ seat_pct }}%"></div>
+                </div>
+
+                {% if user.is_authenticated %}
+                    {% if user.is_participant %}
+                        {% if is_registered %}
+                        <div class="alert alert-success py-2 mb-2"><i class="bi bi-check-circle"></i> You're registered!</div>
+                        <a href="{% url 'registrations:cancel' user_registration.pk %}" class="btn btn-outline-danger btn-sm w-100"
+                           onclick="return confirm('Cancel registration?')">Cancel Registration</a>
+                        {% if event.status == 'completed' %}
+                        <a href="{% url 'feedback:submit' event.pk %}" class="btn btn-warning btn-sm w-100 mt-2">Leave Feedback</a>
+                        {% endif %}
+                        {% elif event.status == 'upcoming' or event.status == 'ongoing' %}
+                            {% if not event.is_full %}
+                            <a href="{% url 'registrations:register' event.pk %}" class="btn btn-primary w-100">Register Now</a>
+                            {% else %}
+                            <button class="btn btn-secondary w-100" disabled>Fully Booked</button>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    {% if user.is_organizer and event.organizer == user or user.is_admin %}
+                    <hr>
+                    <a href="{% url 'events:edit' event.pk %}" class="btn btn-outline-primary btn-sm w-100 mb-2"><i class="bi bi-pencil"></i> Edit Event</a>
+                    <a href="{% url 'attendance:mark' event.pk %}" class="btn btn-outline-success btn-sm w-100 mb-2"><i class="bi bi-check2-all"></i> Mark Attendance</a>
+                    <a href="{% url 'events:export_csv' event.pk %}" class="btn btn-outline-secondary btn-sm w-100 mb-2"><i class="bi bi-download"></i> Export CSV</a>
+                    <a href="{% url 'events:delete' event.pk %}" class="btn btn-outline-danger btn-sm w-100"><i class="bi bi-trash"></i> Delete</a>
+                    {% endif %}
+                {% else %}
+                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary w-100">Login to Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

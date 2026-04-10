@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h2 class="section-title"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="dashboard-card">
+            <div class="text-muted small">Total Users</div>
+            <div class="fs-3 fw-bold text-primary">{{ total_users }}</div>
+            <i class="bi bi-people"></i>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card success">
+            <div class="text-muted small">Total Organizers</div>
+            <div class="fs-3 fw-bold text-success">{{ total_organizers }}</div>
+            <i class="bi bi-person-badge"></i>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card warning">
+            <div class="text-muted small">Total Events</div>
+            <div class="fs-3 fw-bold" style="color:var(--warning);">{{ total_events }}</div>
+            <i class="bi bi-calendar-event"></i>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card danger">
+            <div class="text-muted small">Total Registrations</div>
+            <div class="fs-3 fw-bold text-danger">{{ total_registrations }}</div>
+            <i class="bi bi-ticket"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="dashboard-card success">
+            <div class="text-muted small">Total Revenue (Paid)</div>
+            <div class="fs-3 fw-bold text-success">&#8377;{{ total_payments }}</div>
+            <i class="bi bi-currency-rupee"></i>
+        </div>
+    </div>
+</div>
+
+{% if reg_chart %}
+<div class="card mb-4">
+    <div class="card-body text-center">
+        <h5>Registrations per Event</h5>
+        <img src="data:image/png;base64,{{ reg_chart }}" class="img-fluid">
+    </div>
+</div>
+{% endif %}
+
+<h5 class="mt-4"><i class="bi bi-clock-history"></i> Recent Registrations</h5>
+<div class="table-responsive">
+    <table class="table table-sm table-hover">
+        <thead class="table-dark">
+            <tr><th>User</th><th>Event</th><th>Date</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for reg in recent_registrations %}
+            <tr>
+                <td>{{ reg.user.username }}</td>
+                <td>{{ reg.event.title }}</td>
+                <td>{{ reg.registered_at|date:"M d, Y" }}</td>
+                <td>{% if reg.status == 'active' %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Cancelled</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

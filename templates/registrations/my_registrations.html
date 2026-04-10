@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}My Registrations{% endblock %}
+{% block content %}
+<h2 class="section-title"><i class="bi bi-ticket"></i> My Registrations</h2>
+{% if registrations %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Registration ID</th>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Registered On</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td><code>{{ reg.registration_id }}</code></td>
+                <td><a href="{% url 'events:detail' reg.event.pk %}">{{ reg.event.title }}</a></td>
+                <td>{{ reg.event.date }}</td>
+                <td>{{ reg.registered_at|date:"M d, Y" }}</td>
+                <td>
+                    {% if reg.status == 'active' %}<span class="badge bg-success">Active</span>
+                    {% else %}<span class="badge bg-danger">Cancelled</span>{% endif %}
+                </td>
+                <td>
+                    {% if reg.event.is_free %}<span class="badge bg-info text-dark">Free</span>
+                    {% elif reg.payment.payment_status == 'paid' %}<span class="badge bg-success">Paid</span>
+                    {% elif reg.payment.payment_status == 'pending' %}<span class="badge bg-warning text-dark">Pending</span>
+                    {% else %}<span class="badge bg-danger">Failed</span>{% endif %}
+                </td>
+                <td>
+                    {% if reg.status == 'active' %}
+                    <a href="{% url 'registrations:cancel' reg.pk %}" class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Cancel this registration?')">Cancel</a>
+                    {% if not reg.event.is_free and reg.payment.payment_status == 'pending' %}
+                    <a href="{% url 'payments:pay' reg.payment.pk %}" class="btn btn-sm btn-warning">Pay Now</a>
+                    {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">You haven't registered for any events yet. <a href="{% url 'events:list' %}">Browse events</a></div>
+{% endif %}
+{% endblock %}

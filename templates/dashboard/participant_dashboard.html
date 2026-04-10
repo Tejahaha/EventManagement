@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard{% endblock %}
+{% block content %}
+<h2 class="section-title"><i class="bi bi-speedometer2"></i> My Dashboard</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="dashboard-card">
+            <div class="text-muted small">Registered Events</div>
+            <div class="fs-3 fw-bold text-primary">{{ registrations.count }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card success">
+            <div class="text-muted small">Present Count</div>
+            <div class="fs-3 fw-bold text-success">{{ present_count }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card danger">
+            <div class="text-muted small">Absent Count</div>
+            <div class="fs-3 fw-bold text-danger">{{ absent_count }}</div>
+        </div>
+    </div>
+</div>
+
+{% if att_chart %}
+<div class="card mb-4" style="max-width:400px;">
+    <div class="card-body text-center">
+        <h6>Attendance Summary</h6>
+        <img src="data:image/png;base64,{{ att_chart }}" class="img-fluid">
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        <h5><i class="bi bi-ticket"></i> My Registrations</h5>
+        {% if registrations %}
+        <ul class="list-group mb-3">
+            {% for reg in registrations %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'events:detail' reg.event.pk %}">{{ reg.event.title }}</a><br>
+                    <small class="text-muted">{{ reg.event.date }} &bull; <code>{{ reg.registration_id }}</code></small>
+                </div>
+                {% if reg.status == 'active' %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Cancelled</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}<p class="text-muted">No registrations yet.</p>{% endif %}
+    </div>
+    <div class="col-md-6">
+        <h5><i class="bi bi-credit-card"></i> Recent Payments</h5>
+        {% if payments %}
+        <ul class="list-group mb-3">
+            {% for p in payments %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    {{ p.registration.event.title }}<br>
+                    <small class="text-muted"><code>{{ p.transaction_id }}</code></small>
+                </div>
+                {% if p.payment_status == 'paid' %}<span class="badge bg-success">Paid</span>
+                {% elif p.payment_status == 'pending' %}<span class="badge bg-warning text-dark">Pending</span>
+                {% else %}<span class="badge bg-danger">Failed</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}<p class="text-muted">No payment records.</p>{% endif %}
+    </div>
+</div>
+{% endblock %}
